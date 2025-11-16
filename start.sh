@@ -198,6 +198,10 @@ for i in "${!DATA_FOLDERS[@]}"; do
     
     # 准备相机参数
     echo "准备相机参数..."
+
+    #创建相机所需目录
+    mkdir -p camera/sparse process/output
+
     colmap feature_extractor \
         --database_path ./camera/database.db \
         --image_path ./camera/input \
