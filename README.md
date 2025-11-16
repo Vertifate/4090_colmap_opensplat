@@ -1,0 +1,2 @@
+# 4090_colmap_opensplat
+在4090服务器上自动配置colmap和opensplat环境并进行高斯训练
