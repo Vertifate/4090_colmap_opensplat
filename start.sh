@@ -65,7 +65,7 @@ if [ "$COLMAP_INSTALLED" = false ]; then
     mkdir -p build
     cd build || { echo "无法进入build目录"; exit 1; }
     # Removed hardcoded CUDA architecture to make it more flexible
-    cmake -GNinja -DBLA_VENDOR=Intel10_64lp .. || { echo "CMake配置失败"; exit 1; }
+    cmake -GNinja -DBLA_VENDOR=Intel10_64lp -DCMAKE_CUDA_ARCHITECTURES='89' .. || { echo "CMake配置失败"; exit 1; }
     ninja || { echo "Ninja编译失败"; exit 1; }
     ninja install || { echo "Ninja安装失败"; exit 1; }
 
@@ -89,7 +89,7 @@ if [ "$OPENSLAT_INSTALLED" = false ]; then
     mkdir -p build && cd build || { echo "无法创建或进入build目录"; exit 1; }
     export Torch_DIR="../../libtorch/share/cmake/Torch"
     # Removed hardcoded CUDA architecture to make it more flexible
-    cmake -DCMAKE_PREFIX_PATH=../../libtorch/ .. && make -j$(nproc) || { echo "OpenSplat编译失败"; exit 1; }
+    cmake -DCMAKE_PREFIX_PATH=../../libtorch/ -DCMAKE_CUDA_ARCHITECTURES='89' .. && make -j$(nproc) || { echo "OpenSplat编译失败"; exit 1; }
 
     cd ../..
 fi
