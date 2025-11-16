@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# 添加日志记录功能，将日志保存在当前目录
+LOG_FILE="$(dirname "$0")/processing_log_$(date +%Y%m%d_%H%M%S).log"
+exec > >(tee -a "$LOG_FILE") 2>&1
+
 # 检查COLMAP、OpenSplat和ffmpeg是否可用
 echo "检查COLMAP、OpenSplat和ffmpeg是否已安装..."
 
@@ -77,10 +81,26 @@ if [ "$OPENSLAT_INSTALLED" = false ]; then
     echo "正在安装OpenSplat依赖..."
     apt install -y libopencv-dev || { echo "OpenCV安装失败"; exit 1; }
     
-    if [ ! -f libtorch-cxx11-abi-shared-with-deps-2.3.0+cu121.zip ]; then
+    # 检查并验证zip文件完整性
+    ZIP_FILE="libtorch-cxx11-abi-shared-with-deps-2.3.0+cu121.zip"
+    if [ ! -f "$ZIP_FILE" ]; then
+        echo "正在下载LibTorch..."
         wget https://download.pytorch.org/libtorch/cu121/libtorch-cxx11-abi-shared-with-deps-2.3.0%2Bcu121.zip || { echo "下载LibTorch失败"; exit 1; }
-        unzip libtorch-cxx11-abi-shared-with-deps-2.3.0+cu121.zip || { echo "解压LibTorch失败"; exit 1; }
+    else
+        # 验证现有zip文件的完整性
+        echo "正在验证LibTorch zip文件完整性..."
+        if ! unzip -tq "$ZIP_FILE" >/dev/null 2>&1; then
+            echo "发现损坏的zip文件，重新下载..."
+            rm "$ZIP_FILE"
+            wget https://download.pytorch.org/libtorch/cu121/libtorch-cxx11-abi-shared-with-deps-2.3.0%2Bcu121.zip || { echo "下载LibTorch失败"; exit 1; }
+        else
+            echo "LibTorch zip文件完整"
+        fi
     fi
+    
+    # 解压LibTorch
+    echo "正在解压LibTorch..."
+    unzip -o "$ZIP_FILE" || { echo "解压LibTorch失败"; exit 1; }
 
     # 编译opensplat
     echo "正在编译OpenSplat..."
@@ -213,3 +233,8 @@ for i in "${!DATA_FOLDERS[@]}"; do
 done
 
 echo "所有文件夹处理完毕"
+
+# 脚本执行完成后自动关机
+echo "任务已完成，系统将在1分钟后关机..."
+sleep 60
+/usr/bin/down
