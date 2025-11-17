@@ -229,7 +229,7 @@ for i in "${!DATA_FOLDERS[@]}"; do
 
     # 运行opensplat训练高斯
     echo "开始高斯训练..."
-    ../../opensplat/build/opensplat process --o process/output/$folder.ply || { echo "OpenSplat训练失败"; exit 1; }
+    "${START_DIR}/opensplat/build/opensplat" ./process --o ./process/output/$folder.ply || { echo "OpenSplat训练失败"; exit 1; }
     
     cd "$START_DIR" || { echo "无法返回起始目录"; exit 1; }
     
@@ -238,7 +238,10 @@ done
 
 echo "所有文件夹处理完毕"
 
-# 脚本执行完成后自动关机
-echo "任务已完成，系统将在1分钟后关机..."
-sleep 60
-/usr/bin/down
+# 设置错误处理函数，确保关机
+shutdown_on_exit() {
+    echo "任务已完成，系统将在10秒钟后关机..."
+    sleep 10
+    /usr/bin/down
+}
+trap shutdown_on_exit EXIT
